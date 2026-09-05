@@ -1090,3 +1090,61 @@ Completed This Session
 • [x] 7.1 Integration fixtures
 
 All tasks complete. You can archive this change with /opsx:archive.
+
+===
+
+1. collapse deposits and seen_txs
+2. stop modeling IgnoreReason / RowError as if someone reads them
+3. make Account fields crate-private (or read-only getters); keep DepositRecord out of the public crate surfac
+
+RESULT:
+
+clean up commit
+
+The engine now has one tx map, silent ignores, and a smaller public API. Ledger behavior is unchanged.
+
+1. Collapsed deposits and seen_txs
+
+Engine keeps a single txs: HashMap<TxId, TxRecord>:
+
+• Deposit(DepositRecord) — successful, disputable
+• Consumed — withdrawal that took the id (success or insufficient funds)
+
+Uniqueness is txs.contains_key. Dispute/resolve/chargeback only match Deposit. Zero/negative amounts and locked-account events still do not insert.
+
+2. Stopped modeling ignore/row errors as if someone reads them
+
+• Deleted IgnoreReason. Handlers are () with early return.
+• Deleted RowError / src/error.rs / thiserror. CSVConsumer::iter() yields Event; bad rows are dropped in the reader. main is for event in consumer.iter()?.
+
+3. Shrunk the public crate surface
+
+• Account fields are pub(crate) with client(), available(), held(), locked(), total().
+• DepositRecord / DepositState / TxRecord live in engine.rs and are not re-exported.
+• lib.rs uses private modules and only re-exports Engine, Event, Account, CSVConsumer, StdoutProducer.
+
+cargo test — 105 passed. Sample CSV still prints client 1 = 1.5000, client 2 = 2.0000.
+
+====
+
+4. share dec / fixture test helpers; drop the CLI tests that only repeat integration fixtures.
+5. replace anyhow on the library I/O types with a small typed error; delete unused RowError variants and the unused serde-with-str
+
+RESULT:
+
+clean up commit
+
+Shared the test helpers and replaced library I/O anyhow with a small typed error. Ledger behavior is unchanged.
+
+Helpers. dec and fixture live in two places, which is the Rust split: src/test_support.rs for unit tests, tests/common/mod.rs for integration tests. The five local copies are gone.
+
+CLI tests. tests/cli.rs now only covers binary contracts: sample stdout, missing path, unreadable path, mixed rows, empty header-only file. The twelve tests that re-ran integration fixtures are deleted. The fixtures themselves stay.
+
+I/O errors. CSVConsumer::iter and StdoutProducer::write / write_to return IoError (Io for open, Csv for write). RowError is not coming back. main still uses anyhow and ? converts.
+
+Deps. rust_decimal no longer enables serde / serde-with-str. Amounts are still parsed and formatted by hand.
+
+cargo test: 93 passed. cargo run -- tests/test_data/sample.csv still prints client 1 = 1.5000 and client 2 = 2.0000.
+
+
+==

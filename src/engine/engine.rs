@@ -192,15 +192,9 @@ fn debug_assert_account(account: &Account) {
 #[cfg(test)]
 mod tests {
     use std::collections::{HashMap, HashSet};
-    use std::str::FromStr;
 
     use super::*;
-
-    fn dec(s: &str) -> Amount {
-        let mut amount = Amount::from_str(s).expect("valid test amount");
-        amount.rescale(4);
-        amount
-    }
+    use crate::test_support::dec;
 
     fn deposit(client: ClientId, tx: TxId, amount: &str) -> Event {
         Event::Deposit {

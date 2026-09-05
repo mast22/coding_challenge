@@ -16,5 +16,6 @@ fn run(path: impl AsRef<Path>) -> anyhow::Result<()> {
     for event in consumer.iter()? {
         engine.apply(event);
     }
-    StdoutProducer::new().write(engine.accounts())
+    StdoutProducer::new().write(engine.accounts())?;
+    Ok(())
 }

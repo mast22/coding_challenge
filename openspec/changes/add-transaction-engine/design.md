@@ -105,9 +105,9 @@ Alternative: two maps (`deposits` + `seen_txs`). Rejected; deposit ids were dupl
 
 ### 5. CSVConsumer and StdoutProducer
 
-`CSVConsumer::new(path)` stores the path. `iter()` opens the file with `csv::ReaderBuilder` and returns `Result<impl Iterator<Item = Event>, anyhow::Error>`. Open/read setup failure is a process error. Unknown type, missing amount, unparsable numbers, and other bad rows are skipped inside the reader. Do not model `RowError` as a taxonomy a caller matches on.
+`CSVConsumer::new(path)` stores the path. `iter()` opens the file with `csv::ReaderBuilder` and returns `Result<impl Iterator<Item = Event>, IoError>`. Open/read setup failure is a process error (`IoError::Io`). Unknown type, missing amount, unparsable numbers, and other bad rows are skipped inside the reader. Do not model `RowError` as a taxonomy a caller matches on.
 
-`StdoutProducer::new()` has no args. `write(iter)` serializes account records to stdout via `csv::Writer`. Money serialized at scale 4 (trailing zeros optional per spec).
+`StdoutProducer::new()` has no args. `write(iter)` serializes account records to stdout via `csv::Writer` and returns `Result<(), IoError>` (`IoError::Csv` on write failure). Money serialized at scale 4 (trailing zeros optional per spec). `anyhow` stays in `main` only.
 
 `run(path)`:
 

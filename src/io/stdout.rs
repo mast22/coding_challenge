@@ -2,6 +2,7 @@ use std::io::{self, Write};
 
 use serde::Serialize;
 
+use crate::error::IoError;
 use crate::types::{Account, Amount, ClientId};
 
 #[derive(Serialize)]
@@ -37,7 +38,7 @@ impl StdoutProducer {
         Self
     }
 
-    pub fn write<'a>(&self, accounts: impl IntoIterator<Item = &'a Account>) -> anyhow::Result<()> {
+    pub fn write<'a>(&self, accounts: impl IntoIterator<Item = &'a Account>) -> Result<(), IoError> {
         self.write_to(io::stdout(), accounts)
     }
 
@@ -45,7 +46,7 @@ impl StdoutProducer {
         &self,
         writer: W,
         accounts: impl IntoIterator<Item = &'a Account>,
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), IoError> {
         let mut writer = csv::WriterBuilder::new()
             .has_headers(false)
             .from_writer(writer);
@@ -67,17 +68,11 @@ impl Default for StdoutProducer {
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-    use std::str::FromStr;
 
     use serde::Deserialize;
 
     use super::*;
-
-    fn dec(s: &str) -> Amount {
-        let mut amount = Amount::from_str(s).expect("valid test amount");
-        amount.rescale(4);
-        amount
-    }
+    use crate::test_support::dec;
 
     #[derive(Debug, Deserialize)]
     struct SnapshotRow {

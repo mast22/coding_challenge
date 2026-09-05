@@ -1,21 +1,11 @@
+mod common;
+
 use std::collections::HashMap;
-use std::path::PathBuf;
-use std::str::FromStr;
 
 use rust_challenge::{Account, CSVConsumer, Engine};
 use rust_decimal::Decimal;
 
-fn fixture(name: &str) -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/test_data")
-        .join(name)
-}
-
-fn dec(s: &str) -> Decimal {
-    let mut amount = Decimal::from_str(s).expect("valid test amount");
-    amount.rescale(4);
-    amount
-}
+use common::{dec, fixture};
 
 fn run_fixture(name: &str) -> HashMap<u16, Account> {
     let mut engine = Engine::new();

@@ -5,6 +5,7 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
+use crate::error::IoError;
 use crate::types::{Amount, Event};
 
 #[derive(Debug, Deserialize)]
@@ -73,7 +74,7 @@ impl CSVConsumer {
         }
     }
 
-    pub fn iter(&self) -> anyhow::Result<impl Iterator<Item = Event>> {
+    pub fn iter(&self) -> Result<impl Iterator<Item = Event>, IoError> {
         let file = File::open(&self.path)?;
         Ok(events_from_reader(file))
     }
@@ -82,12 +83,7 @@ impl CSVConsumer {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn dec(s: &str) -> Amount {
-        let mut amount = Amount::from_str(s).expect("valid test amount");
-        amount.rescale(4);
-        amount
-    }
+    use crate::test_support::{dec, fixture};
 
     fn parse_csv(input: &str) -> Vec<Event> {
         events_from_reader(input.as_bytes()).collect()
@@ -95,8 +91,7 @@ mod tests {
 
     #[test]
     fn sample_csv_yields_five_events_in_file_order() {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/test_data/sample.csv");
-        let events: Vec<Event> = CSVConsumer::new(path)
+        let events: Vec<Event> = CSVConsumer::new(fixture("sample.csv"))
             .iter()
             .expect("sample.csv opens")
             .collect();
