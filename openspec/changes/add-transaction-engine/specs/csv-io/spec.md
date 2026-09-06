@@ -44,9 +44,9 @@ The reader MUST skip a row and continue when the type is unknown, required field
 
 ### Requirement: Output CSV account snapshots
 
-The writer MUST emit CSV with columns `client`, `available`, `held`, `total`, `locked`. Money fields MUST be represented at four decimal places of precision. Row order MUST NOT matter. Spacing and trailing zeros on integer money values MAY vary. Every account known to the engine MUST appear once.
+The writer MUST emit CSV with columns `client`, `available`, `held`, `total`, `locked`. Money fields MUST print at most four decimal places and MUST omit trailing zeros (integers print without a decimal point). Row order MUST NOT matter. Every account known to the engine MUST appear once.
 
 #### Scenario: Brief sample output
 
 - **WHEN** snapshots for client 1 (available 1.5, held 0, total 1.5, locked false) and client 2 (available 2.0, held 0, total 2.0, locked false) are written
-- **THEN** the CSV contains those two rows in any order with four-decimal money values
+- **THEN** the CSV contains those two rows in any order with money printed as `1.5`, `0`, and `2` (trailing zeros omitted)

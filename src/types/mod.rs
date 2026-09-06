@@ -30,6 +30,18 @@ pub enum Event {
     },
 }
 
+impl Event {
+    pub fn client(&self) -> ClientId {
+        match self {
+            Event::Deposit { client, .. }
+            | Event::Withdrawal { client, .. }
+            | Event::Dispute { client, .. }
+            | Event::Resolve { client, .. }
+            | Event::Chargeback { client, .. } => *client,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Account {
     pub(crate) client: ClientId,

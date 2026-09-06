@@ -1,11 +1,12 @@
-mod common;
+//! integration_tests.rs runs integration test data and checks different cases
+//! of the system as a whole. Which were not covered by unit tests.
 
 use std::collections::HashMap;
 
 use rust_challenge::{Account, CSVConsumer, Engine};
 use rust_decimal::Decimal;
 
-use common::{dec, fixture};
+use rust_challenge::test_utils::{dec, fixture};
 
 fn run_fixture(name: &str) -> HashMap<u16, Account> {
     let mut engine = Engine::new();

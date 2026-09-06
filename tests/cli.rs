@@ -1,4 +1,5 @@
-mod common;
+//! cli.rs in an integration tests suite for CLI interface
+//! It checks the system's output and how correctly it was produced
 
 use std::collections::HashMap;
 use std::process::Command;
@@ -6,7 +7,7 @@ use std::process::Command;
 use rust_decimal::Decimal;
 use serde::Deserialize;
 
-use common::{dec, fixture};
+use rust_challenge::test_utils::{dec, fixture};
 
 fn bin() -> Command {
     Command::new(env!("CARGO_BIN_EXE_rust_challenge"))
@@ -63,7 +64,22 @@ fn run_ok(name: &str) -> HashMap<u16, (Decimal, Decimal, Decimal, bool)> {
 
 #[test]
 fn sample_csv_prints_brief_account_rows() {
-    let snapshots = run_ok("sample.csv");
+    let output = bin()
+        .arg(fixture("sample.csv"))
+        .output()
+        .expect("binary runs");
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8(output.stdout).expect("stdout is utf-8");
+    assert!(stdout.contains("1.5"));
+    assert!(stdout.contains("2"));
+    assert!(!stdout.contains("1.5000"));
+    assert!(!stdout.contains("2.0000"));
+
+    let snapshots = parse_snapshots(&stdout);
     assert_eq!(snapshots.len(), 2);
     assert_eq!(
         snapshots.get(&1),

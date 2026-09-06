@@ -83,7 +83,7 @@ impl CSVConsumer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_support::{dec, fixture};
+    use crate::test_utils::{dec, fixture};
 
     fn parse_csv(input: &str) -> Vec<Event> {
         events_from_reader(input.as_bytes()).collect()

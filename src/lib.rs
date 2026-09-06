@@ -3,8 +3,7 @@ mod error;
 mod io;
 mod types;
 
-#[cfg(test)]
-mod test_support;
+pub mod test_utils;
 
 pub use engine::Engine;
 pub use error::IoError;

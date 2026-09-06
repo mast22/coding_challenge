@@ -28,7 +28,7 @@ impl From<&Account> for OutputRow {
 
 fn format_amount(mut amount: Amount) -> String {
     amount.rescale(4);
-    format!("{:.4}", amount)
+    amount.normalize().to_string()
 }
 
 pub struct StdoutProducer;
@@ -38,7 +38,10 @@ impl StdoutProducer {
         Self
     }
 
-    pub fn write<'a>(&self, accounts: impl IntoIterator<Item = &'a Account>) -> Result<(), IoError> {
+    pub fn write<'a>(
+        &self,
+        accounts: impl IntoIterator<Item = &'a Account>,
+    ) -> Result<(), IoError> {
         self.write_to(io::stdout(), accounts)
     }
 
@@ -72,7 +75,7 @@ mod tests {
     use serde::Deserialize;
 
     use super::*;
-    use crate::test_support::dec;
+    use crate::test_utils::dec;
 
     #[derive(Debug, Deserialize)]
     struct SnapshotRow {
@@ -128,9 +131,9 @@ mod tests {
                 dec("0"),
                 dec("1.5"),
                 false,
-                "1.5000".to_string(),
-                "0.0000".to_string(),
-                "1.5000".to_string(),
+                "1.5".to_string(),
+                "0".to_string(),
+                "1.5".to_string(),
             ),
             (
                 2,
@@ -138,9 +141,9 @@ mod tests {
                 dec("0"),
                 dec("2.0"),
                 false,
-                "2.0000".to_string(),
-                "0.0000".to_string(),
-                "2.0000".to_string(),
+                "2".to_string(),
+                "0".to_string(),
+                "2".to_string(),
             ),
         ]);
         assert_eq!(got, expected);
@@ -180,8 +183,23 @@ mod tests {
         assert_eq!(dec(&row.held), dec("0"));
         assert_eq!(dec(&row.total), dec("0"));
         assert!(row.locked);
-        assert_eq!(row.available, "0.0000");
-        assert_eq!(row.held, "0.0000");
-        assert_eq!(row.total, "0.0000");
+        assert_eq!(row.available, "0");
+        assert_eq!(row.held, "0");
+        assert_eq!(row.total, "0");
+    }
+
+    #[test]
+    fn format_amount_strips_trailing_zeros() {
+        let cases = [
+            ("1.5000", "1.5"),
+            ("2.0000", "2"),
+            ("0", "0"),
+            ("1.0001", "1.0001"),
+            ("1.0100", "1.01"),
+            ("1.0010", "1.001"),
+        ];
+        for (input, printed) in cases {
+            assert_eq!(format_amount(dec(input)), printed, "input {input}");
+        }
     }
 }
