@@ -1,0 +1,11 @@
+type,client,tx,amount
+deposit,1,1,1.0
+transfer,1,2,1.0
+deposit,1,3,2.0
+deposit,1,4,
+deposit,2,5,2.0
+deposit,abc,6,1.0
+withdrawal,1,7,1.5
+deposit,1,xyz,1.0
+withdrawal,2,8,3.0
+deposit,1,9,not-a-number
